@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>poep AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .chat-window {
+            background: #000;
+            border-radius: 10px;
+            padding: 150px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-window li {
+            list-style: none;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .chat-window li:nth-child(odd) {
+            background: #fff;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-window li:nth-child(even) {
+            background: #cecece;
+            border-bottom-left-radius: 5px;
+        }
+
+        .input-area {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .submit-btn {
+            padding: 10px 20px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .submit-btn:hover {
+            background: #cfcfcf;
+        }
+
+        .chat-controls {
+            align-items: center;
+        }
+
+        .btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-left: 10.5rem;
+        }
+
+        
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: white; margin-left: 11rem; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">Domme AI weet niets</h1>
+
+    <ul class="chat-window" id="chatList"></ul>
+
+    <div class="chat-controls">
+        <input type="text" id="chatInput" class="input-area" placeholder="Typ hier"><br><br>
+        <div class="btn-wrapper">
+            <button class="submit-btn" id="chatSend">Stuur Bericht</button>
+        </div>
+    </div>
+
+    <script>
+        const chatList = document.getElementById("chatList");
+
+        function appendMessage(message, isUser = true) {
+            const li = document.createElement("li");
+            li.innerText = message;
+            chatList.appendChild(li);
+            chatList.scrollTop = chatList.scrollHeight;
+        }
+
+        async function talkToModel(message) {
+            appendMessage(message, true);
+
+            const url = "http://localhost:11434/api/generate";
+            const options = {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: message,
+                    stream: false,
+                    model: "phi3"
+                })
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                appendMessage(data.response, false);
+            } catch (error) {
+                appendMessage("BRAM DOE OLLAMA AAN", false);
+            }
+        }
+
+        talkToModel("Hallo! (Nederlands)");
+
+        document.getElementById("chatSend").addEventListener("click", () => {
+            const input = document.getElementById("chatInput");
+            if (input.value.trim() !== "") {
+                talkToModel(input.value);
+                input.value = "";
+            }
+        });
+
+        document.getElementById("chatInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                document.getElementById("chatSend").click();
+            }
+        });
+    </script>
+</body>
+</html>
